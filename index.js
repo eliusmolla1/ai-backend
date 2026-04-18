@@ -6,13 +6,24 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ✅ API key ঠিকভাবে বসাও
-const openai = new OpenAI
-  apiKey: process.env.OPENAI_API_KEY
+// ✅ OpenAI setup (correct way)
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
+// ✅ Root route (browser test)
+app.get("/", (req, res) => {
+  res.send("AI Backend is running 🚀");
+});
+
+// ✅ Chat API
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
+
+    if (!userMessage) {
+      return res.status(400).json({ error: "Message is required" });
+    }
 
     const response = await openai.chat.completions.create({
       model: "gpt-4o-mini",
@@ -33,11 +44,12 @@ app.post("/chat", async (req, res) => {
     });
 
   } catch (error) {
-    console.log("ERROR:", error);
-    res.status(500).json({ error: error.message });
+    console.error("ERROR:", error.message);
+    res.status(500).json({ error: "Something went wrong" });
   }
 });
 
+// ✅ PORT (Render auto set করবে)
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
