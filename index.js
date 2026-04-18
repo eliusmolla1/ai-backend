@@ -3,20 +3,27 @@ const cors = require("cors");
 const OpenAI = require("openai");
 
 const app = express();
+
+// middleware
 app.use(cors());
 app.use(express.json());
 
-// ✅ OpenAI setup (correct way)
+// OpenAI setup
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// ✅ Root route (browser test)
+// Root route (browser test)
 app.get("/", (req, res) => {
   res.send("AI Backend is running 🚀");
 });
 
-// ✅ Chat API
+// 👉 IMPORTANT: chat GET (for browser test)
+app.get("/chat", (req, res) => {
+  res.send("Use POST request to /chat");
+});
+
+// Chat API (MAIN)
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message;
@@ -44,12 +51,15 @@ app.post("/chat", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("ERROR:", error.message);
-    res.status(500).json({ error: "Something went wrong" });
+    console.error("ERROR FULL:", error); // 🔥 full error log
+    res.status(500).json({
+      error: "Server error",
+      details: error.message,
+    });
   }
 });
 
-// ✅ PORT (Render auto set করবে)
+// PORT
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
